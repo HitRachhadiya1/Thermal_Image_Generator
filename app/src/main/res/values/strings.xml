@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">Camera Using CameraX</string>
+    <string name="app_name">Thermal Camera</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="toggle_flash">Toggle Flash</string>
+    <string name="flip_camera">Flip Camera</string>
+    <string name="switch_to_video">Switch to Video Mode</string>
 </resources>
