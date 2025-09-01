@@ -1,10 +1,12 @@
 package com.coding.camerausingcamerax
 
-
 import android.content.ContentValues
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.RectF
+import android.net.Uri
 import android.os.*
 import android.provider.MediaStore
 import android.util.Log
@@ -31,7 +33,6 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.widget.ImageView
 import androidx.camera.core.ImageProxy
@@ -351,50 +352,43 @@ class MainActivity : AppCompatActivity() {
         val imageFolder = File(
             Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES
-            ), "Images"
+            ), "ThermalCamera"
         )
+
         if (!imageFolder.exists()) {
-            imageFolder.mkdir()
+            imageFolder.mkdirs()
         }
 
-        val fileName = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-            .format(System.currentTimeMillis()) + ".jpg"
+        val imageName = "${System.currentTimeMillis()}.jpg"
+        val imageFile = File(imageFolder, imageName)
 
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Images")
-            }
-        }
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(imageFile).build()
 
-        val metadata = ImageCapture.Metadata().apply {
-            isReversedHorizontal = (lensFacing == CameraSelector.LENS_FACING_FRONT)
-        }
-
-        // Capture image with in-memory callback for thermal processing
         imageCapture.takePicture(
+            outputOptions,
             ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageCapturedCallback() {
-                override fun onCaptureSuccess(image: ImageProxy) {
-                    // Convert ImageProxy to Bitmap
-                    val bitmap = imageProxyToBitmap(image)
-
-                    // Process with thermal generation
-                    processImageWithThermal(bitmap)
-
-                    // Also save the original image
-                    saveOriginalImage(bitmap, fileName, contentValues, metadata)
-
-                    image.close()
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    val savedUri = outputFileResults.savedUri ?: Uri.fromFile(imageFile)
+                    val msg = "Photo captured. Processing..."
+                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+                    
+                    // Navigate to ImageResultActivity with the saved image path
+                    val intent = Intent(this@MainActivity, ImageResultActivity::class.java).apply {
+                        putExtra(ImageResultActivity.EXTRA_IMAGE_PATH, imageFile.absolutePath)
+                    }
+                    startActivity(intent)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        exception.message.toString(),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Failed to capture photo: ${exception.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         )
