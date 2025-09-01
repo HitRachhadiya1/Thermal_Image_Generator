@@ -1,8 +1,8 @@
-# 🔥 Thermal Image Generator with CameraX
+# Thermal Image Generator with CameraX
 
 A powerful Android application that captures images and applies a thermal imaging effect, transforming them into heat map visualizations. Built with CameraX for reliable camera functionality and modern Android development practices.
 
-## ✨ Features
+## Features
 
 - **Thermal Imaging**: Converts standard images to thermal representations with realistic color mapping
 - **Camera Integration**: Built with CameraX for reliable camera functionality
@@ -11,16 +11,16 @@ A powerful Android application that captures images and applies a thermal imagin
 - **Modern UI**: Clean and intuitive user interface
 - **Responsive Design**: Works across different screen sizes and orientations
 
-## 🎨 Color Mapping
+## Color Mapping
 
 The thermal effect uses the following color gradient to represent temperature variations:
-- 🔵 **Blue (0-31)**: Coldest temperatures
-- 🔷 **Cyan (32-95)**: Cool temperatures
-- 🟢 **Green (96-159)**: Moderate temperatures
-- 🟡 **Yellow (160-223)**: Warm temperatures
-- 🔴 **Red (224-255)**: Hottest temperatures
+-  **Blue (0-31)**: Coldest temperatures
+-  **Cyan (32-95)**: Cool temperatures
+-  **Green (96-159)**: Moderate temperatures
+-  **Yellow (160-223)**: Warm temperatures
+-  **Red (224-255)**: Hottest temperatures
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Android Studio (latest version recommended)
@@ -37,7 +37,7 @@ The thermal effect uses the following color gradient to represent temperature va
 3. Sync the project with Gradle files
 4. Build and run the app on an Android device or emulator
 
-## 📸 How to Use
+## How to Use
 
 1. Launch the app
 2. Grant camera and storage permissions when prompted
@@ -48,7 +48,7 @@ The thermal effect uses the following color gradient to represent temperature va
    - Save the image to your gallery
    - Retake the photo
 
-## 🛠️ Technical Details
+##  Technical Details
 
 - **Minimum SDK**: 21 (Android 5.0 Lollipop)
 - **Target SDK**: Latest Android version
@@ -59,7 +59,7 @@ The thermal effect uses the following color gradient to represent temperature va
   - ViewBinding for view interaction
   - AndroidX libraries
 
-## 📝 Permissions
+## Permissions
 
 The app requires the following permissions:
 - Camera: To capture photos
