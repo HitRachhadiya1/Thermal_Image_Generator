@@ -61,8 +61,8 @@ class ImageResultActivity : AppCompatActivity() {
                 // Simulate image processing (replace with your actual image processing)
                 Thread.sleep(1000) // Simulate processing time
                 
-                // Convert to thermal effect (example: grayscale)
-                convertedImage = convertToThermal(bitmap)
+                // Convert to thermal effect
+                convertedImage = processImageWithThermal(bitmap)
                 
                 // Update UI on the main thread
                 withContext(Dispatchers.Main) {
@@ -80,47 +80,51 @@ class ImageResultActivity : AppCompatActivity() {
         }
     }
     
-    private fun convertToThermal(bitmap: Bitmap): Bitmap {
-        // This is a simple grayscale conversion as an example
-        // Replace with your actual thermal image processing logic
-        val width = bitmap.width
-        val height = bitmap.height
-        val pixels = IntArray(width * height)
-        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+    private fun processImageWithThermal(bitmap: Bitmap): Bitmap {
+        // Create a mutable copy of the bitmap
+        val thermalBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
         
-        for (y in 0 until height) {
-            for (x in 0 until width) {
-                val index = y * width + x
-                val pixel = pixels[index]
-                
-                // Extract RGB components
-                val r = (pixel shr 16) and 0xFF
-                val g = (pixel shr 8) and 0xFF
-                val b = pixel and 0xFF
-                
-                // Convert to grayscale (luminosity method)
-                val gray = (0.21 * r + 0.72 * g + 0.07 * b).toInt()
-                
-                // Apply thermal effect (red-yellow gradient based on intensity)
-                val thermalPixel = when {
-                    gray < 85 -> android.graphics.Color.rgb(255, gray * 3, 0) // Red to yellow
-                    gray < 170 -> {
-                        val value = (gray - 85) * 3
-                        android.graphics.Color.rgb(255, 255, value) // Yellow to white
-                    }
-                    else -> {
-                        val value = (gray - 170) * 3
-                        android.graphics.Color.rgb(255, 255 - value, 255 - value) // White to blue
-                    }
-                }
-                
-                pixels[index] = thermalPixel
+        // Get the width and height of the image
+        val width = thermalBitmap.width
+        val height = thermalBitmap.height
+        
+        // Create an array to store the pixel data
+        val pixels = IntArray(width * height)
+        thermalBitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        
+        // Process each pixel to create thermal effect
+        for (i in pixels.indices) {
+            val pixel = pixels[i]
+            
+            // Extract RGB components
+            val r = android.graphics.Color.red(pixel)
+            val g = android.graphics.Color.green(pixel)
+            val b = android.graphics.Color.blue(pixel)
+            
+            // Convert to grayscale (luminosity method)
+            val gray = (0.21 * r + 0.72 * g + 0.07 * b).toInt()
+            
+            // Map grayscale to thermal colors (blue -> cyan -> green -> yellow -> red)
+            val thermalColor = when {
+                // Black (coldest) to Blue
+                gray < 32 -> android.graphics.Color.rgb(0, 0, 51 + gray * 6)
+                // Blue to Cyan
+                gray < 96 -> android.graphics.Color.rgb(0, (gray - 32) * 4, 255)
+                // Cyan to Green
+                gray < 160 -> android.graphics.Color.rgb(0, 255, 255 - (gray - 96) * 4)
+                // Green to Yellow
+                gray < 224 -> android.graphics.Color.rgb((gray - 160) * 4, 255, 0)
+                // Yellow to Red (hottest)
+                else -> android.graphics.Color.rgb(255, 255 - (gray - 224) * 8, 0)
             }
+            
+            // Preserve alpha channel
+            pixels[i] = thermalColor or (pixel and 0xFF000000.toInt())
         }
         
-        val thermalBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        thermalBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
-        return thermalBitmap
+        val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
+        return resultBitmap
     }
     
     private fun displayImage(bitmap: Bitmap) {
